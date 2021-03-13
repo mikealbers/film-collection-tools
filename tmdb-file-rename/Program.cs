@@ -2,6 +2,7 @@
 using System.Net;
 using System.IO;
 using System.Text;
+using Newtonsoft.Json.Linq;
 
 namespace tmdb_file_rename
 {
@@ -26,29 +27,24 @@ namespace tmdb_file_rename
                 //C:\Users\malbe\Downloads\films
                 //E:\Cinema
 
-                //var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-
                 //DirectoryInfo directory = new DirectoryInfo(@"E:\Cinema");
                 //FileInfo[] infos = directory.GetFiles();
                 //foreach (FileInfo f in infos)
                 //{
-                //    string formatted = Path.GetFileNameWithoutExtension(f.FullName);
-                //    formatted = formatted.Replace(" ", "+").Replace(".", "+").Replace("_", "+").Replace("1080p", "").Replace("720p", "");
-                //    formatted = formatted.TrimEnd('+');
-                //    formatted = formatted.TrimEnd(digits);
-                //    formatted = formatted.TrimEnd('+');
+                //    string formattedFileName = FormatFileNameForQuery(f.FullName);
 
-                //    Console.WriteLine(formatted);
                 //    Console.WriteLine(f.FullName);
+                //    Console.WriteLine(formattedFileName);
                 //    Console.WriteLine("----------------------------------------");
                 //}
 
-                //string queryBase = TMDB_SEARCH_URL + "?api_key=" + args[1] + "&query=";
-                //string filmQuery = queryBase + "Tai+Club";
+                string queryBase = TMDB_SEARCH_URL + "?api_key=" + args[1] + "&query=";
+                string filmQuery = queryBase + "avengers";
 
-                //string details = GetRestMethod(filmQuery);
+                string details = GetRestMethod(filmQuery);
+                var detailsDeserialized = JObject.Parse(details);
 
-                //Console.WriteLine(details);
+                Console.WriteLine(details);
             }
 
         }
@@ -64,6 +60,27 @@ namespace tmdb_file_rename
             string result = responseStream.ReadToEnd();
             webresponse.Close();
             return result;
+        }
+
+        public static string FormatFileNameForQuery(string fileName)
+        {
+            var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+
+            string formatted = Path.GetFileNameWithoutExtension(fileName);
+            formatted = formatted.Replace(" ", "+").Replace(".", "+").Replace("_", "+").Replace("1080p", "").Replace("720p", "");
+            formatted = formatted.TrimEnd('+');
+            formatted = formatted.TrimEnd(digits);
+            formatted = formatted.TrimEnd('+');
+
+            return formatted;
+        }
+
+        public class Movie
+        {
+            public int Id { get; set; }
+            public string Title { get; set; }
+            public string OriginalTital { get; set; }
+            public string ReleaseDate { get; set; } 
         }
     }
 }
