@@ -28,7 +28,7 @@ After a working api key and directory have been supplied, it will go through the
 In this example, you can see that you are provided with a number of the total and what file you are on. 
 
 For each file there are three possible senarios that you can encounter:
-1. **One result is found** and the program will automatically pick that result
+1. **One result** is found and the program will automatically pick that result
 1. **Multiple results** are found and a list will appear. At this point the user will need to enter a number to pick a title. At the end of every list there is an option to skip renaming in case none of the options are what you are looking for. 
 1. **Zero results** are found and the program will automatically **skip** renaming
 
