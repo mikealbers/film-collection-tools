@@ -34,7 +34,7 @@ For each file there are three possible senarios that you can encounter:
 
 ![basic example](tmdb-file-rename/images/tmdb-basic-example.png)
 
-In some cases, usually when a file has a pretty generic or common title, there can be a lot of results. In this case, the correct title was out of view and you would need to scroll through the options
+In some cases, usually when a file has a pretty generic or common title, there can be a lot of results. In this case, the correct title is out of view and you would need to scroll through the options
 
 ![long example](tmdb-file-rename/images/tmdb-long-example.png)
 
