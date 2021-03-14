@@ -36,7 +36,7 @@ namespace tmdb_file_rename
 
             //TODO: Remove. Temporarily for testing purposes.
             //apiKey = args[1];
-            //directoryPath = @"E:\RenameTest";
+            //directoryPath = @"E:\Cinema";
 
             DirectoryInfo directory = new DirectoryInfo(directoryPath);
             FileInfo[] files = directory.GetFiles();
@@ -76,7 +76,14 @@ namespace tmdb_file_rename
                 {
                     if (Path.GetFileNameWithoutExtension(file.FullName) != selectedNames[fileCount])
                     {
-                        File.Move(file.FullName, file.FullName.Replace(Path.GetFileNameWithoutExtension(file.FullName), selectedNames[fileCount]));
+                        try
+                        {
+                            File.Move(file.FullName, file.FullName.Replace(Path.GetFileNameWithoutExtension(file.FullName), selectedNames[fileCount]));
+                        }
+                        catch
+                        {
+                            
+                        }
                     }
                     fileCount++;
                 }
@@ -120,9 +127,10 @@ namespace tmdb_file_rename
             formatted = formatted.TrimEnd(digits);
             formatted = formatted.TrimEnd('+');
 
-            int index = formatted.LastIndexOf("(");
-            if (index > 0)
-                formatted = formatted.Substring(0, index);
+            //Commented out to skip already formatted files
+            //int index = formatted.LastIndexOf("(");
+            //if (index > 0)
+            //    formatted = formatted.Substring(0, index);
 
             return formatted;
         }
@@ -228,6 +236,8 @@ namespace tmdb_file_rename
             {
                 Console.WriteLine("Rename selection:\n{0}", selectionLookup[selectionInput]);
             }
+
+
             return Tuple.Create(selectionLookup[selectionInput], skipRename);
         }
 
