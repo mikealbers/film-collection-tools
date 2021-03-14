@@ -36,7 +36,7 @@ namespace tmdb_file_rename
 
             //TODO: Remove. Temporarily for testing purposes.
             //apiKey = args[1];
-            //directoryPath = @"E:\Cinema";
+            //directoryPath = @"F:/Film/Japan";
 
             DirectoryInfo directory = new DirectoryInfo(directoryPath);
             FileInfo[] files = directory.GetFiles();
