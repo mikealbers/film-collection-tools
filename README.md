@@ -42,3 +42,7 @@ A text file will be created in the directory with a list of all the skipped file
 **TMDB-skipped-files.txt** 
 
 ![skipped files txt](tmdb-file-rename/images/tmdb-skipped-txt-example.png)
+
+
+MIT License
+Copyright (c) 2021 Michael Albers
