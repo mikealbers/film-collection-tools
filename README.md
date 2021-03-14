@@ -39,8 +39,8 @@ In some cases, usually when a file has a pretty generic or common title, there c
 ![long example](tmdb-file-rename/images/tmdb-long-example.png)
 
 After going through every file, the program will provide a list of all of the chosen options, including any that would have been automatically or manually skipped. Skipped files will keep their original names.
-* Confirming with a [Y] will rename the files and create a txt file with a list of all the skipped files to be manually renamed.
-* Entering a [N] at this point will exit the program and make no changes
+* Confirming with a *[Y]* will rename the files and create a txt file with a list of all the skipped files to be manually renamed.
+* Entering a *[N]* at this point will exit the program and make no changes
 
 ![confirm example](tmdb-file-rename/images/tmdb-confirm-example.png)
 
