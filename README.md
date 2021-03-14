@@ -3,6 +3,14 @@
 
 
 ### Running the program
+Clone or download the repository.
+
+open a console in _tmdb-file-rename-master/tmdb-file-rename_
+
+Enter dotnet run in the console.
+`$ dotnet run`
+
+Additionally if you just want a single exe file to run, I've included a publish profile with the repository. It'll make a faily large exe but you wont have to have any .NET installed.
 
 ### Usage
 When running the program will prompt the user for a TMDB api key. Followed by a prompt for a directory.
