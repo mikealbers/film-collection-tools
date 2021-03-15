@@ -30,16 +30,23 @@ namespace tmdb_file_rename
 
         static void Main(string[] args)
         {
+            string apiKey;
+            string directoryPath;
+
             Console.WriteLine(TITLE);
 
-            Console.WriteLine("Enter a TMDB api key:");
-            string apiKey = Console.ReadLine();
-            Console.WriteLine("Enter a directory path:");
-            string directoryPath = Console.ReadLine();
-
-            //TODO: Remove. For testing purposes.
-            //apiKey = args[1];
-            //directoryPath = @"F:/Film";
+            if (args.Length == 2)
+            {
+                apiKey = args[0];
+                directoryPath = args[1];
+            } 
+            else
+            {
+                Console.WriteLine("Enter a TMDB api key:");
+                apiKey = Console.ReadLine();
+                Console.WriteLine("Enter a directory path:");
+                directoryPath = Console.ReadLine();
+            }
 
             DirectoryInfo directory = new DirectoryInfo(directoryPath);
             FileInfo[] files = directory.GetFiles();
