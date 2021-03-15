@@ -11,89 +11,44 @@ namespace tmdb_file_rename
     class Program
     {
         public const string TMDB_SEARCH_URL = "https://api.themoviedb.org/3/search/movie?api_key=";
-
-        static void Main(string[] args)
-        {
-            Console.WriteLine("----------------------------------------\n" +
+        public const string TITLE = "----------------------------------------\n" +
                 "|        TMDB File Renaming Tool       |\n" +
                 "|           Mike Albers 2021           |\n" +
                 "|                                      |\n" +
                 "| This tool will search TMDB for movie |\n" +
                 "| titles based on a supplied directory |\n" +
-                "| and rename the files from the results|\n" +
-                "|                                      |\n" +
+                "| and rename the files from the        |\n" +
+                "| formatted api response               |\n" +
                 "|                                      |\n" +
                 "|    Requires a TMDB api key to use    |\n" +
                 "|                                      |\n" +
                 "|                                      |\n" +
-                "----------------------------------------\n");
+                "----------------------------------------\n";
 
+        static void Main(string[] args)
+        {
+            Console.WriteLine(TITLE);
 
             Console.WriteLine("Enter a TMDB api key:");
             string apiKey = Console.ReadLine();
             Console.WriteLine("Enter a directory path:");
             string directoryPath = Console.ReadLine();
 
-            //TODO: Remove. Temporarily for testing purposes.
+            //TODO: Remove. For testing purposes.
             //apiKey = args[1];
-            //directoryPath = @"F:/Film/Japan";
+            //directoryPath = @"F:/Film";
 
             DirectoryInfo directory = new DirectoryInfo(directoryPath);
             FileInfo[] files = directory.GetFiles();
 
             Tuple<List<string>, List<string>> selectedAndSkippedNames = GetSelectedAndSkippedNamesFromUser(files, apiKey);
-            List<string> selectedNames = new List<string>(selectedAndSkippedNames.Item1);
-            List<string> skippedFiles = new List<string>(selectedAndSkippedNames.Item2);
 
-            Console.WriteLine("----------------------------------------\n" +
-                "----------------------------------------\n" +
-                "The files in this directory will be renamed as followed:");
-            foreach (string selectedName in selectedNames)
+            ConsoleKey userResponse = GetUserConfirmation(selectedAndSkippedNames.Item1);
+
+            if (userResponse == ConsoleKey.Y)
             {
-                Console.WriteLine(selectedName);
-            }
-            Console.WriteLine("----------------------------------------\n" +
-                "----------------------------------------\n" +
-                "Confirm rename (y/n)");
-
-            ConsoleKey response;
-
-            do
-            {
-                response = Console.ReadKey(false).Key;
-                if (response != ConsoleKey.Enter)
-                {
-                    Console.WriteLine("");
-                }
-
-            }
-            while (response != ConsoleKey.Y && response != ConsoleKey.N);
-
-            if (response == ConsoleKey.Y)
-            {
-                int fileCount = 0;
-                foreach (FileInfo file in files)
-                {
-                    if (Path.GetFileNameWithoutExtension(file.FullName) != selectedNames[fileCount])
-                    {
-                        try
-                        {
-                            File.Move(file.FullName, file.FullName.Replace(Path.GetFileNameWithoutExtension(file.FullName), selectedNames[fileCount]));
-                        }
-                        catch
-                        {
-                            
-                        }
-                    }
-                    fileCount++;
-                }
-
-                TextWriter tw = new StreamWriter(directoryPath + @"\TMDB-skipped-files.txt");
-
-                foreach (String s in skippedFiles)
-                    tw.WriteLine(s);
-
-                tw.Close();
+                RenameFiles(files, selectedAndSkippedNames.Item1);
+                WriteListToTextFile(directoryPath, selectedAndSkippedNames.Item2, @"\TMDB-skipped-files.txt");
                 return;
             }
             else
@@ -116,13 +71,73 @@ namespace tmdb_file_rename
             return result;
         }
 
+        public static void WriteListToTextFile(string directoryPath, List<string> stringList, string output)
+        {
+            TextWriter tw = new StreamWriter(directoryPath + output);
+            foreach (String s in stringList)
+            {
+                tw.WriteLine(s);
+            }
+            tw.Close();
+        }
+
+        public static void RenameFiles(FileInfo[] files, List<string> newFileNames)
+        {
+            int fileCount = 0;
+            foreach (FileInfo file in files)
+            {
+                if (Path.GetFileNameWithoutExtension(file.FullName) != newFileNames[fileCount])
+                {
+                    try
+                    {
+                        File.Move(file.FullName, file.FullName.Replace(Path.GetFileNameWithoutExtension(file.FullName), newFileNames[fileCount]));
+                    }
+                    catch(Exception e)
+                    {
+                        //TODO: Add some error handling. Had issues in the past with punctuation being left in the new file names.
+                        Console.WriteLine(e);
+                    }
+                }
+                fileCount++;
+            }
+        }
+
+        public static ConsoleKey GetUserConfirmation(List<string> selectedNames)
+        {
+            // Print out all of the user selections
+            // including the automatically skipped file names
+            Console.WriteLine("----------------------------------------\n" +
+                "----------------------------------------\n" +
+                "The files in this directory will be renamed as followed:");
+            foreach (string selectedName in selectedNames)
+            {
+                Console.WriteLine(selectedName);
+            }
+            Console.WriteLine("----------------------------------------\n" +
+                "----------------------------------------\n" +
+                "Confirm rename (y/n)");
+
+            ConsoleKey response;
+
+            do
+            {
+                response = Console.ReadKey(false).Key;
+                if (response != ConsoleKey.Enter)
+                {
+                    Console.WriteLine("");
+                }
+            }
+            while (response != ConsoleKey.Y && response != ConsoleKey.N);
+            return response;
+        }
+
         public static string FormatFileNameForQuery(string fileName)
         {
             var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
             //TODO: Refactor this. Should be reworked so that there are not as many TrimEnd functions / generally cleaner
             string formatted = Path.GetFileNameWithoutExtension(fileName);
-            formatted = formatted.Replace(" ", "+").Replace(".", "+").Replace("_", "+").Replace("1080p", "").Replace("720p", "");
+            formatted = formatted.Replace(" ", "+").Replace(".", "+").Replace("_", "+").Replace("1080p", "").Replace("720p", "").Replace(",","").Replace("The", "");
             formatted = formatted.TrimEnd('+');
             formatted = formatted.TrimEnd(digits);
             formatted = formatted.TrimEnd('+');
@@ -153,29 +168,9 @@ namespace tmdb_file_rename
                 fileCounter++;
                 Console.WriteLine("[{0} of {1}]", fileCounter, files.Length);
 
-                //Call TMDB api for list of movies matching filename
-                //The files names need to be formated beforehand for TMDB's search
-                string formattedFileName = FormatFileNameForQuery(file.FullName);
-                string details = GetRestMethod(TMDB_SEARCH_URL + apiKey + "&query=" + formattedFileName);
-                Response detailsDeserialized = JsonConvert.DeserializeObject<Response>(details);
+                FormattedResponse formattedResponse = GetFormattedResponse(apiKey, file.FullName);
 
-                if (detailsDeserialized.Total_Pages > 1)
-                {
-                    for (int i = 2; i <= detailsDeserialized.Total_Pages; i++)
-                    {
-                        Response pagesToAdd = JsonConvert.DeserializeObject<Response>(GetRestMethod(TMDB_SEARCH_URL + apiKey + "&query=" + formattedFileName + "&page=" + i));
-                        detailsDeserialized.Results.AddRange(pagesToAdd.Results);
-                    }
-                }
-
-                List<string> movieNames = new List<string>();
-                foreach (Movie movie in detailsDeserialized.Results)
-                {
-                    var newName = FormatNewNameFromMovie(movie);
-                    movieNames.Add(newName);
-                }
-
-                if (movieNames.Count == 0)
+                if (formattedResponse.MovieTitles.Count == 0)
                 {
                     skippedFiles.Add(Path.GetFileNameWithoutExtension(file.FullName));
                     selectedNames.Add(Path.GetFileNameWithoutExtension(file.FullName));
@@ -183,19 +178,19 @@ namespace tmdb_file_rename
                         "Skipping rename\n" +
                         "---------------------------------------", file.FullName);
                 }
-                else if (movieNames.Count == 1)
+                else if (formattedResponse.MovieTitles.Count == 1)
                 {
-                    selectedNames.Add(movieNames[0]);
+                    selectedNames.Add(formattedResponse.MovieTitles[0]);
                     Console.WriteLine("One result for: {0} \n" +
                         "{1}\n" +
-                        "---------------------------------------", file.FullName, movieNames[0]);
+                        "---------------------------------------", file.FullName, formattedResponse.MovieTitles[0]);
                 }
                 else
                 {
-                    Console.WriteLine("Mutiple results for: {0}\n" +
+                    Console.WriteLine("{0} results for: {1}\n" +
                         "Please choose from one of the following:\n" +
-                        "----------------------------------------", file.FullName);
-                    Tuple<string,bool> selection = NameSelectionMenu(movieNames, Path.GetFileNameWithoutExtension(file.FullName));
+                        "----------------------------------------", formattedResponse.Total_Results, file.FullName);
+                    Tuple<string,bool> selection = NameSelectionMenu(formattedResponse);
 
                     if (selection.Item2) skippedFiles.Add(selection.Item1);
                     selectedNames.Add(selection.Item1);
@@ -204,46 +199,104 @@ namespace tmdb_file_rename
             return Tuple.Create(selectedNames,skippedFiles);
         }
 
-        public static Tuple<string, bool> NameSelectionMenu(List<string> movieNameOptions, string originalName)
+        public static Tuple<string, bool> NameSelectionMenu(FormattedResponse formattedResponse, int selectionCounter = 0, Dictionary<int, string> selectionLookup = null)
         {
-            int selectionCounter = 0;
             int selectionInput;
+            int maximumSelectionNumber;
             bool skipRename = false;
-            Dictionary<int, string> selectionLookup = new Dictionary<int, string>();
 
-            foreach(string movieName in movieNameOptions)
+            // Only add skip option on first call
+            if (selectionCounter == 0 && selectionLookup == null)
+            {
+                selectionLookup = new Dictionary<int, string>();
+                Console.WriteLine("0.) SKIP and keep original filename.");
+                selectionLookup.Add(selectionCounter, formattedResponse.OriginalFileName);
+            } 
+
+            // Print out all the results for the current page
+            foreach (string movieName in formattedResponse.MovieTitles)
             {
                 selectionCounter++;
                 selectionLookup.Add(selectionCounter, movieName);
                 Console.WriteLine("{0}.) {1}", selectionCounter, movieName);
             }
 
-            Console.WriteLine("{0}.) SKIP and keep original filename.", selectionCounter + 1);
-            selectionLookup.Add(selectionCounter + 1, originalName);
-
-            while (!int.TryParse(Console.ReadLine(), out selectionInput) || selectionInput > selectionCounter + 1)
+            
+            if (formattedResponse.Total_Pages > 1 && formattedResponse.CurrentPage != formattedResponse.Total_Pages)
             {
-                Console.WriteLine("Invalid selection \n" +
-                    "Enter a value between 1 and {0}", selectionCounter + 1);
+                // If there is more than one page and we are not on the last page, add an option to request more pages. 
+                maximumSelectionNumber = selectionCounter + 1;
+                Console.WriteLine("{0}.) Next page", selectionCounter + 1);
+            }
+            else
+            {
+                // Effects the input filter.
+                maximumSelectionNumber = selectionCounter;
             }
 
-            if (selectionInput == selectionCounter + 1)
+            // Input filter to remove non numbers and anything outside the selection range
+            while (!int.TryParse(Console.ReadLine(), out selectionInput) || selectionInput > maximumSelectionNumber)
+            {
+                Console.WriteLine("Invalid selection \n" +
+                    "Enter a value between 0 and {0}", maximumSelectionNumber);
+            }
+
+            if (selectionInput == 0)
             {
                 Console.WriteLine("Skipping rename\n");
                 skipRename = true;
-            }   
+            }
+            else if (selectionInput == selectionCounter + 1)
+            {
+                // If the user wants more results we move the cursor up and overwrite the next page option.
+                // Then get the next page and recursively call NameSelectionMenu with the new response, 
+                // current selection counter and, current selection lookup dictionary.
+                // This will essentially append the next page results to the current page.
+                Console.SetCursorPosition(0, Console.CursorTop - 2);
+                FormattedResponse nextPageResponse = GetFormattedResponse(formattedResponse.ApiKey, formattedResponse.OriginalFileName, formattedResponse.CurrentPage + 1);
+                NameSelectionMenu(nextPageResponse, selectionCounter, selectionLookup);
+            }
             else
             {
-                Console.WriteLine("Rename selection:\n{0}", selectionLookup[selectionInput]);
+                Console.WriteLine("Option selection:\n{0}", selectionLookup[selectionInput]);
             }
 
-
+            // Return the selected name. If skipRename is true it means that the original name is being passed back
             return Tuple.Create(selectionLookup[selectionInput], skipRename);
         }
 
+        public static FormattedResponse GetFormattedResponse(string apiKey, string fileName, int pageNumber = 1)
+        {
+            // TMDB will not return results for poorly formatted file names
+            string formattedFileName = FormatFileNameForQuery(fileName);
+
+            // Send request to TMDB and deserialize the response
+            Response detailsDeserialized = JsonConvert.DeserializeObject<Response>(GetRestMethod(TMDB_SEARCH_URL + apiKey + "&query=" + formattedFileName + "&page=" + pageNumber));
+
+            FormattedResponse formattedResponse = new FormattedResponse
+            {
+                Total_Results = detailsDeserialized.Total_Results,
+                Total_Pages = detailsDeserialized.Total_Pages,
+                FormattedFileName = formattedFileName,
+                OriginalFileName = fileName,
+                ApiKey = apiKey,
+                CurrentPage = pageNumber,
+                MovieTitles = new List<string>()
+            };
+
+            foreach (Movie movie in detailsDeserialized.Results)
+            {
+                // Formats as "Title (Date)"
+                formattedResponse.MovieTitles.Add(FormatNewNameFromMovie(movie));
+            }
+            return formattedResponse;
+        }
+
+        
+
         public class Response
         {
-            public int TotalResults { get; set; }
+            public int Total_Results { get; set; }
             public int Total_Pages { get; set; }
             public List<Movie> Results { get; set; }
         }
@@ -254,6 +307,17 @@ namespace tmdb_file_rename
             public string Title { get; set; }
             public string Original_Title { get; set; }
             public string Release_Date { get; set; } 
+        }
+
+        public class FormattedResponse
+        {
+            public int Total_Results { get; set; }
+            public int Total_Pages { get; set; }
+            public int CurrentPage { get; set; }
+            public string FormattedFileName { get; set; }
+            public string OriginalFileName { get; set; }
+            public string ApiKey { get; set; }
+            public List<string> MovieTitles { get; set; }
         }
     }
 }
