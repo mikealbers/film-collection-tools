@@ -13,7 +13,8 @@ namespace tmdb_file_rename
         public const string TMDB_SEARCH_URL = "https://api.themoviedb.org/3/search/movie?api_key=";
         public const string OUTPUT_FILE_NAME = "TMDB-skipped-files.txt";
 
-        public const string TITLE = "----------------------------------------\n" +
+        public const string TITLE = 
+                "----------------------------------------\n" +
                 "|        TMDB File Renaming Tool       |\n" +
                 "|           Mike Albers 2021           |\n" +
                 "|                                      |\n" +
