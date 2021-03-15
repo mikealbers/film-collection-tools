@@ -2,9 +2,9 @@
 using System.Net;
 using System.IO;
 using System.Text;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace tmdb_file_rename
 {
@@ -45,7 +45,20 @@ namespace tmdb_file_rename
 
             Tuple<List<string>, List<string>> selectedAndSkippedNames = GetSelectedAndSkippedNamesFromUser(files, apiKey);
 
-            ConsoleKey userResponse = GetUserConfirmation(selectedAndSkippedNames.Item1);
+            // Print out all of the user selections
+            // including the automatically skipped file names
+            Console.WriteLine("----------------------------------------\n" +
+                "----------------------------------------\n" +
+                "The files in this directory will be renamed as followed:");
+            foreach (string selectedName in selectedAndSkippedNames.Item1)
+            {
+                Console.WriteLine(selectedName);
+            }
+            Console.WriteLine("----------------------------------------\n" +
+                "----------------------------------------\n" +
+                "Confirm rename ( y / n )");
+
+            ConsoleKey userResponse = GetUserConfirmation();
 
             if (userResponse == ConsoleKey.Y)
             {
@@ -86,39 +99,30 @@ namespace tmdb_file_rename
         public static void RenameFiles(FileInfo[] files, List<string> newFileNames)
         {
             int fileCount = 0;
+            Regex illegalInFileName = new Regex(@"[\\/:*?""<>|]");
+            
             foreach (FileInfo file in files)
             {
-                if (Path.GetFileNameWithoutExtension(file.FullName) != newFileNames[fileCount])
+                if (fileCount < newFileNames.Count)
                 {
-                    try
+                    if (Path.GetFileNameWithoutExtension(file.FullName) != newFileNames[fileCount])
                     {
-                        File.Move(file.FullName, file.FullName.Replace(Path.GetFileNameWithoutExtension(file.FullName), newFileNames[fileCount]));
+                        try
+                        {
+                            File.Move(file.FullName, file.FullName.Replace(Path.GetFileNameWithoutExtension(file.FullName), illegalInFileName.Replace(newFileNames[fileCount], "")));
+                        }
+                        catch(Exception exception)
+                        {
+                            Console.WriteLine(exception);
+                        }
                     }
-                    catch(Exception exception)
-                    {
-                        //TODO: Add some error handling. Had issues in the past with punctuation being left in the new file names.
-                        Console.WriteLine(exception);
-                    }
+                    fileCount++;
                 }
-                fileCount++;
             }
         }
 
-        public static ConsoleKey GetUserConfirmation(List<string> selectedNames)
+        public static ConsoleKey GetUserConfirmation()
         {
-            // Print out all of the user selections
-            // including the automatically skipped file names
-            Console.WriteLine("----------------------------------------\n" +
-                "----------------------------------------\n" +
-                "The files in this directory will be renamed as followed:");
-            foreach (string selectedName in selectedNames)
-            {
-                Console.WriteLine(selectedName);
-            }
-            Console.WriteLine("----------------------------------------\n" +
-                "----------------------------------------\n" +
-                "Confirm rename (y/n)");
-
             ConsoleKey response;
 
             do
@@ -189,29 +193,35 @@ namespace tmdb_file_rename
                 }
                 else
                 {
-                    Console.WriteLine("{0} results for: {1}\n" +
+                    Console.WriteLine("[{0} results] for: {1}\n" +
                         "Please choose from one of the following:\n" +
                         "----------------------------------------", formattedResponse.Total_Results, file.FullName);
-                    Tuple<string,bool> selection = NameSelectionMenu(formattedResponse);
+                    Tuple<string, bool, bool> selection = NameSelectionMenu(formattedResponse);
 
-                    if (selection.Item2) skippedFiles.Add(selection.Item1);
                     selectedNames.Add(selection.Item1);
+
+                    // Keep track of all skipped files to be able to print out at end
+                    if (selection.Item2) skippedFiles.Add(selection.Item1);
+
+                    // Quit early and go to rename confirmation
+                    if (selection.Item3) return Tuple.Create(selectedNames, skippedFiles);
                 }
             }
             return Tuple.Create(selectedNames,skippedFiles);
         }
 
-        public static Tuple<string, bool> NameSelectionMenu(FormattedResponse formattedResponse, int selectionCounter = 0, Dictionary<int, string> selectionLookup = null)
+        public static Tuple<string, bool, bool> NameSelectionMenu(FormattedResponse formattedResponse, int selectionCounter = 0, Dictionary<int, string> selectionLookup = null)
         {
             int selectionInput;
             int maximumSelectionNumber;
             bool skipRename = false;
+            bool quitEarly = false;
 
             // Only add skip option on first call
             if (selectionCounter == 0 && selectionLookup == null)
             {
                 selectionLookup = new Dictionary<int, string>();
-                Console.WriteLine("0.) SKIP and keep original filename.");
+                Console.WriteLine("0.) SKIP rename or quit early");
                 selectionLookup.Add(selectionCounter, formattedResponse.OriginalFileName);
             } 
 
@@ -247,6 +257,16 @@ namespace tmdb_file_rename
             {
                 Console.WriteLine("Skipping rename\n");
                 skipRename = true;
+
+                Console.WriteLine("Would you like to quit early? ( y / n )");
+                ConsoleKey userResponse = GetUserConfirmation();
+
+                if (userResponse == ConsoleKey.Y)
+                {
+                    Console.WriteLine("Exiting to confirmation of currently selected names.");
+                    quitEarly = true;
+                    return Tuple.Create(formattedResponse.FormattedFileName, skipRename, quitEarly);
+                }
             }
             else if (selectionInput == selectionCounter + 1)
             {
@@ -264,7 +284,7 @@ namespace tmdb_file_rename
             }
 
             // Return the selected name. If skipRename is true it means that the original name is being passed back
-            return Tuple.Create(selectionLookup[selectionInput], skipRename);
+            return Tuple.Create(selectionLookup[selectionInput], skipRename, quitEarly);
         }
 
         public static FormattedResponse GetFormattedResponse(string apiKey, string fileName, int pageNumber = 1)
