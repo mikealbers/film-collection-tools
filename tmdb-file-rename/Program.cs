@@ -213,7 +213,7 @@ namespace tmdb_file_rename
         public static Tuple<string, bool, bool> NameSelectionMenu(FormattedResponse formattedResponse, int selectionCounter = 0, Dictionary<int, string> selectionLookup = null)
         {
             int selectionInput;
-            int maximumSelectionNumber;
+            int maximumSelectionInput;
             bool skipRename = false;
             bool quitEarly = false;
 
@@ -237,20 +237,20 @@ namespace tmdb_file_rename
             if (formattedResponse.Total_Pages > 1 && formattedResponse.CurrentPage != formattedResponse.Total_Pages)
             {
                 // If there is more than one page and we are not on the last page, add an option to request more pages. 
-                maximumSelectionNumber = selectionCounter + 1;
+                maximumSelectionInput = selectionCounter + 1;
                 Console.WriteLine("{0}.) Next page", selectionCounter + 1);
             }
             else
             {
                 // Effects the input filter.
-                maximumSelectionNumber = selectionCounter;
+                maximumSelectionInput = selectionCounter;
             }
 
             // Input filter to remove non numbers and anything outside the selection range
-            while (!int.TryParse(Console.ReadLine(), out selectionInput) || selectionInput > maximumSelectionNumber)
+            while (!int.TryParse(Console.ReadLine(), out selectionInput) || selectionInput > maximumSelectionInput)
             {
                 Console.WriteLine("Invalid selection \n" +
-                    "Enter a value between 0 and {0}", maximumSelectionNumber);
+                    "Enter a value between 0 and {0}", maximumSelectionInput);
             }
 
             if (selectionInput == 0)
