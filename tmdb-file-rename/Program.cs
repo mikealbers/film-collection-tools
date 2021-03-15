@@ -62,25 +62,25 @@ namespace tmdb_file_rename
 
         public static string GetRestMethod(string url)
         {
-            HttpWebRequest webrequest = (HttpWebRequest)WebRequest.Create(url);
-            webrequest.Method = "GET";
-            webrequest.ContentType = "application/x-www-form-urlencoded";
-            HttpWebResponse webresponse = (HttpWebResponse)webrequest.GetResponse();
-            Encoding enc = Encoding.GetEncoding("utf-8");
-            StreamReader responseStream = new StreamReader(webresponse.GetResponseStream(), enc);
+            HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(url);
+            webRequest.Method = "GET";
+            webRequest.ContentType = "application/x-www-form-urlencoded";
+            HttpWebResponse webResponse = (HttpWebResponse)webRequest.GetResponse();
+            Encoding encoding = Encoding.GetEncoding("utf-8");
+            StreamReader responseStream = new StreamReader(webResponse.GetResponseStream(), encoding);
             string result = responseStream.ReadToEnd();
-            webresponse.Close();
+            webResponse.Close();
             return result;
         }
 
         public static void WriteSkippedListToTextFile(string outputPath, List<string> skippedNameList)
         {
-            TextWriter tw = new StreamWriter(outputPath);
-            foreach (String s in skippedNameList)
+            TextWriter textWriter = new StreamWriter(outputPath);
+            foreach (String skippedName in skippedNameList)
             {
-                tw.WriteLine(s);
+                textWriter.WriteLine(skippedName);
             }
-            tw.Close();
+            textWriter.Close();
         }
 
         public static void RenameFiles(FileInfo[] files, List<string> newFileNames)
@@ -94,10 +94,10 @@ namespace tmdb_file_rename
                     {
                         File.Move(file.FullName, file.FullName.Replace(Path.GetFileNameWithoutExtension(file.FullName), newFileNames[fileCount]));
                     }
-                    catch(Exception e)
+                    catch(Exception exception)
                     {
                         //TODO: Add some error handling. Had issues in the past with punctuation being left in the new file names.
-                        Console.WriteLine(e);
+                        Console.WriteLine(exception);
                     }
                 }
                 fileCount++;
