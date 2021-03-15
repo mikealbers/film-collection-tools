@@ -11,6 +11,8 @@ namespace tmdb_file_rename
     class Program
     {
         public const string TMDB_SEARCH_URL = "https://api.themoviedb.org/3/search/movie?api_key=";
+        public const string OUTPUT_FILE_NAME = "TMDB-skipped-files.txt";
+
         public const string TITLE = "----------------------------------------\n" +
                 "|        TMDB File Renaming Tool       |\n" +
                 "|           Mike Albers 2021           |\n" +
@@ -48,7 +50,7 @@ namespace tmdb_file_rename
             if (userResponse == ConsoleKey.Y)
             {
                 RenameFiles(files, selectedAndSkippedNames.Item1);
-                WriteListToTextFile(directoryPath, selectedAndSkippedNames.Item2, @"\TMDB-skipped-files.txt");
+                WriteListToTextFile(directoryPath + @"\" + OUTPUT_FILE_NAME, selectedAndSkippedNames.Item2);
                 return;
             }
             else
@@ -71,9 +73,9 @@ namespace tmdb_file_rename
             return result;
         }
 
-        public static void WriteListToTextFile(string directoryPath, List<string> stringList, string output)
+        public static void WriteListToTextFile(string outputPath, List<string> stringList)
         {
-            TextWriter tw = new StreamWriter(directoryPath + output);
+            TextWriter tw = new StreamWriter(outputPath);
             foreach (String s in stringList)
             {
                 tw.WriteLine(s);
@@ -291,8 +293,6 @@ namespace tmdb_file_rename
             }
             return formattedResponse;
         }
-
-        
 
         public class Response
         {
