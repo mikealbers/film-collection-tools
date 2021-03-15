@@ -50,7 +50,7 @@ namespace tmdb_file_rename
             if (userResponse == ConsoleKey.Y)
             {
                 RenameFiles(files, selectedAndSkippedNames.Item1);
-                WriteListToTextFile(directoryPath + @"\" + OUTPUT_FILE_NAME, selectedAndSkippedNames.Item2);
+                WriteSkippedListToTextFile(directoryPath + @"\" + OUTPUT_FILE_NAME, selectedAndSkippedNames.Item2);
                 return;
             }
             else
@@ -73,10 +73,10 @@ namespace tmdb_file_rename
             return result;
         }
 
-        public static void WriteListToTextFile(string outputPath, List<string> stringList)
+        public static void WriteSkippedListToTextFile(string outputPath, List<string> skippedNameList)
         {
             TextWriter tw = new StreamWriter(outputPath);
-            foreach (String s in stringList)
+            foreach (String s in skippedNameList)
             {
                 tw.WriteLine(s);
             }
