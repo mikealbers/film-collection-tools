@@ -144,7 +144,7 @@ namespace tmdb_file_rename
             formatted = formatted.TrimEnd(digits);
             formatted = formatted.TrimEnd('+');
 
-            //Commented out to skip already formatted files
+            //TODO: Remove. Commented out to skip already formatted files
             //int index = formatted.LastIndexOf("(");
             //if (index > 0)
             //    formatted = formatted.Substring(0, index);
