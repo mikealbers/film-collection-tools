@@ -12,6 +12,7 @@ namespace tmdb_file_rename
     {
         public const string TMDB_SEARCH_URL = "https://api.themoviedb.org/3/search/movie?api_key=";
         public const string OUTPUT_FILE_NAME = "TMDB-skipped-files.txt";
+        public const string MANUAL_RENAME_DIRECTORY = "ManualRename";
 
         public const string TITLE = 
                 "----------------------------------------\n" +
@@ -82,8 +83,20 @@ namespace tmdb_file_rename
 
             if (userResponse == ConsoleKey.Y)
             {
-                RenameFiles(files, selectedAndSkippedNames.Item1);
+                Console.WriteLine("Would you like to move the skipped files into {0}? ( y / n )\n", MANUAL_RENAME_DIRECTORY);
+                userResponse = GetUserConfirmation();
+                if (userResponse == ConsoleKey.Y)
+                {
+                    CreateManualRenameDirectory(directoryPath + @"\" + MANUAL_RENAME_DIRECTORY);
+                    RenameFiles(files, selectedAndSkippedNames.Item1, true);
+                }
+                else
+                {
+                    RenameFiles(files, selectedAndSkippedNames.Item1);
+                }
+
                 WriteSkippedListToTextFile(directoryPath + @"\" + OUTPUT_FILE_NAME, selectedAndSkippedNames.Item2);
+
                 return;
             }
             else
@@ -116,7 +129,29 @@ namespace tmdb_file_rename
             textWriter.Close();
         }
 
-        public static void RenameFiles(FileInfo[] files, List<string> newFileNames)
+        public static void CreateManualRenameDirectory(string newDirectoryPath)
+        {
+            try
+            {
+                Console.WriteLine("Creating {0}", MANUAL_RENAME_DIRECTORY);
+                // Determine whether the directory exists.
+                if (Directory.Exists(newDirectoryPath))
+                {
+                    Console.WriteLine("That directory exists already");
+                    return;
+                }
+
+                // Try to create the directory.
+                DirectoryInfo di = Directory.CreateDirectory(newDirectoryPath);
+                Console.WriteLine("The directory was created successfully at {0} on {1}.", newDirectoryPath, Directory.GetCreationTime(newDirectoryPath));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("The process failed: {0}", e.ToString());
+            }
+        }
+
+        public static void RenameFiles(FileInfo[] files, List<string> newFileNames, bool moveSkippedFiles = false)
         {
             int fileCount = 0;
             Regex illegalInFileName = new Regex(@"[\\/:*?""<>|]");
@@ -135,6 +170,11 @@ namespace tmdb_file_rename
                         {
                             Console.WriteLine(exception);
                         }
+                    }
+                    else if (Path.GetFileNameWithoutExtension(file.FullName) == newFileNames[fileCount] && moveSkippedFiles)
+                    {
+                        var path = Path.GetDirectoryName(file.FullName) + @"\" + MANUAL_RENAME_DIRECTORY + @"\" + Path.GetFileName(file.FullName);
+                        File.Move(file.FullName, path);
                     }
                     fileCount++;
                 }
