@@ -21,7 +21,7 @@ Additionally, if you just want a single exe file to run, I've included a publish
 ### Usage
 When running, the program will prompt the user for a TMDB api key followed by a prompt for a directory.
 
-![header](tmdb-file-rename/images/tmdb-top.png)
+![header](images/tmdb-top.png)
 
 
 After a working api key and directory have been supplied, it will go through the files in that directory and begin formatting the names to search the TMDB api for possible titles.
@@ -34,7 +34,7 @@ For each file there are three possible senarios that you can encounter:
 
 In some cases, usually when a file has a pretty generic or common title, there can be a lot of results. The option to show the next page will appear as the last option in the list.
 
-![basic example](tmdb-file-rename/images/tmdb-basic-example.png)
+![basic example](images/tmdb-basic-example.png)
 
 
 
@@ -42,12 +42,12 @@ After going through every file, the program will provide a list of all of the ch
 * Confirming with a *[Y]* will rename the files and create a txt file with a list of all the skipped files to be manually renamed.
 * Entering a *[N]* at this point will exit the program and make no changes
 
-![confirm example](tmdb-file-rename/images/tmdb-confirm-example.png)
+![confirm example](images/tmdb-confirm-example.png)
 
 A text file will be created in the directory with a list of all the skipped files.
 **TMDB-skipped-files.txt** 
 
-![skipped files txt](tmdb-file-rename/images/tmdb-skipped-txt-example.png)
+![skipped files txt](images/tmdb-skipped-txt-example.png)
 
 
 MIT License
