@@ -51,6 +51,18 @@ namespace tmdb_file_rename
             DirectoryInfo directory = new DirectoryInfo(directoryPath);
             FileInfo[] files = directory.GetFiles();
 
+            if (files.Length == 0)
+            {
+                do
+                {
+                    Console.WriteLine("Directory contains no files. Enter a new directory path:");
+                    directoryPath = Console.ReadLine();
+                    directory = new DirectoryInfo(directoryPath);
+                    files = directory.GetFiles();
+                }
+                while (files.Length == 0);
+            }
+
             Tuple<List<string>, List<string>> selectedAndSkippedNames = GetSelectedAndSkippedNamesFromUser(files, apiKey);
 
             // Print out all of the user selections
