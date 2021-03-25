@@ -4,6 +4,10 @@
 
 Reads files formatted by TMDB file rename tool and creates a CSV for importing to letterboxd
 
+## film collection assistant
+
+Desktop app to manage, sort, and filter local film collection
+
 ## tmdb file rename
 
 # The Movie Database (TMDB) file rename tool
