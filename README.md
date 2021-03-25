@@ -29,7 +29,7 @@ Additionally, if you just want a single exe file to run, I've included a publish
 ### Usage
 When running, the program will prompt the user for a TMDB api key followed by a prompt for a directory.
 
-![header](images/tmdb-top.png)
+![header](tmdb-file-rename/images/tmdb-top.png)
 
 
 After a working api key and directory have been supplied, it will go through the files in that directory and begin formatting the names to search the TMDB api for possible titles.
